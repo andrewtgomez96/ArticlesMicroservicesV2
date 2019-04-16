@@ -15,13 +15,6 @@ COUNT = 10
 def rss():
     #List that will hold articles
     items = []
-    #The format of an Item object given by rfeed
-    item = Item(
-            title = "NEW Sample Articles 54",
-            link = "example.com/articles/2",
-            description = "Sample Article",
-            author = "EM",
-            pubDate = datetime.datetime.now())
 
     #access the articles microservice
     link = "http://localhost/articles/" + str(COUNT)
@@ -30,10 +23,6 @@ def rss():
     #Check if got an 'OK' status to conntinue
     if rArticles.status_code == 200:
         print("Connection Establish")
-    else:
-        print("FAILED Connection ",rArticles.status_code) 
-
-    items.append(item)
 
     #Retrive atricles metadata from articles microserice
     link = "http://localhost/articles/" + str(COUNT)
@@ -42,13 +31,29 @@ def rss():
     #Check if established connection
     if rInfoArticles.status_code == 200:
         print('Establish Connection')
-    else:
-        print("Failed connection ", rInfoArticles.status_code)
+        data=rInfoArticles.json
+        for i in range(len(data)):
+            #add body with comments underneath
+            content = data[i]["body"] + "\n\n"
+            content += data[i]["comments"]
+            item = Item(
+                    title = data[i]["title"],
+                    link = "http://localhost/articles" + str(data[i]["title"]),
+                    description = content,
+                    author = data[i]["username"],
+                    pubDate=data[i]["created"]
+                    )
+            items.append(item)
 
-    #Start creating RSS articles
-    #data = rArticles.json()
-    #for articles in data:
-    #    print(articles)
+    #The format of an Item object given by rfeed
+    item = Item(
+            title = "New Article",
+            link = "example.com/articles/2",
+            description = "Sample Article",
+            author = "EM",
+            pubDate = datetime.datetime.now())
+
+    items.append(item)
 
     #Title of the RSS feed given by rfeee
     feed = Feed(
