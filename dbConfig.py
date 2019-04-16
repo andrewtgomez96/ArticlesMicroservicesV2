@@ -5,10 +5,10 @@ from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///usersDB.sqlite'
-app.config['SQLALCHEMY_BINDS'] = {'articles' : 'sqlite://///articleDB.sqlite',
-                                    'tags' : 'sqlite://///tagDB.sqlite',
-                                    'comments' : 'sqlite:////commentDB.sqlite'}
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///usersDB.db'
+app.config['SQLALCHEMY_BINDS'] = {'articles' : 'sqlite:///articleDB.db',
+                                    'tags' : 'sqlite:///tagDB.db',
+                                    'comments' : 'sqlite:///commentDB.db'}
 
 db = SQLAlchemy(app)
 class User(db.Model):
