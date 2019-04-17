@@ -28,7 +28,7 @@ def init_db_command():
 
 def init_db():
     db.create_all(bind='articles')
-    engine = create_engine ('sqlite:///userDB.db')
+    engine = create_engine ('sqlite:///usersDB.db')
     connection = engine.connect()
     Session = sessionmaker(bind=engine)
 
@@ -66,18 +66,12 @@ def deleteUser():
         db.session.rollback()
         return jsonify('Unauthorized response'), 401
 
-    #authenticate
-    if(checkAuth(username, password) == True):
-        #delete user
-        u = User.query.filter_by(username = username).first()
-        db.session.delete(u)
-        db.session.commit()
-        db.session.close()
-        return jsonify('Successfully deleted user'), 200
-    #invalid credentials, return 409
-    else:
-        db.session.rollback()
-        return jsonify('Credentials not found'), 409
+    #delete user
+    u = User.query.filter_by(username = username).first()
+    db.session.delete(u)
+    db.session.commit()
+    db.session.close()
+    return jsonify('Successfully deleted user'), 200
 
 #3 change existing user's password
 @app.route("/user/edit", methods=['PATCH'])
@@ -91,19 +85,32 @@ def editUser():
         db.session.rollback()
         return jsonify('Unauthorized response'), 401
 
+    #set new password
+    pw_hash = bcrypt.generate_password_hash(newPassword).decode('utf-8')
+    u = User.query.filter_by(username = username).first()
+    u.password = pw_hash
+    db.session.commit()
+    db.session.close()
+    return jsonify('Successfully updated user password'), 200
+
+#4 check authentication
+@app.route("/user/auth", methods=['GET'])
+def authUser():
+    session = Session()
+    if (request.authorization):
+        username = request.authorization.username
+        password = request.authorization.password
+    else:
+        db.session.rollback()
+        return jsonify('Unauthorized response'), 401
+
     #authenticate
     if(checkAuth(username, password) == True):
         #set new password
-        pw_hash = bcrypt.generate_password_hash(newPassword).decode('utf-8')
-        u = User.query.filter_by(username = username).first()
-        u.password = pw_hash
-        db.session.commit()
-        db.session.close()
-        return jsonify('Successfully updated user password'), 200
+        return jsonify('Successfully authenticated'), 200
     else:
         db.session.rollback()
         return jsonify('Credentials not found'), 409
-
 
 if(__name__ == '__main__'):
     app.run(debug=True)
