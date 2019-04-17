@@ -34,8 +34,10 @@ def rss():
         data=rInfoArticles.json
         for i in range(len(data)):
             #add body with comments underneath
+            link = "http://localhost/article/" + data[i]["artId"] + "/comments"
+            rComments = requests.get(link)
             content = data[i]["body"] + "\n\n"
-            content += data[i]["comments"]
+            content += rComments.json
             item = Item(
                     title = data[i]["title"],
                     link = "http://localhost/articles" + str(data[i]["title"]),
